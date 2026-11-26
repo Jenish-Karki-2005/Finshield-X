@@ -1,10 +1,16 @@
-
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix
+)
 
 # ==========================================
 # 1. LOAD DATASET
@@ -211,7 +217,6 @@ preprocessor = ColumnTransformer(
     sparse_threshold=1.0
 )
 
-
 # Learn preprocessing from training data
 X_train_processed = preprocessor.fit_transform(X_train)
 
@@ -220,11 +225,91 @@ X_test_processed = preprocessor.transform(X_test)
 
 
 # ==========================================
-# 7. FINAL SHAPE
+# 7. FINAL PREPROCESSING CHECK
 # ==========================================
 
 print("\nProcessed training shape:", X_train_processed.shape)
-
 print("Processed testing shape:", X_test_processed.shape)
 
 print("\nData preprocessing completed successfully!")
+
+
+# ==========================================
+# 8. LOGISTIC REGRESSION MODEL
+# ==========================================
+
+model = LogisticRegression(
+    class_weight="balanced",
+    max_iter=1000
+)
+
+model.fit(X_train_processed, y_train)
+
+print("\nLogistic Regression model trained successfully!")
+
+
+# ==========================================
+# 9. LOGISTIC REGRESSION PREDICTIONS
+# ==========================================
+
+y_pred = model.predict(X_test_processed)
+
+print("\nFirst 20 predictions:")
+print(y_pred[:20])
+
+
+# ==========================================
+# 10. LOGISTIC REGRESSION EVALUATION
+# ==========================================
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+
+# ==========================================
+# 11. RANDOM FOREST MODEL
+# ==========================================
+
+sample_size = 500000
+
+X_train_rf = X_train_processed[:sample_size]
+y_train_rf = y_train.iloc[:sample_size]
+
+print("\nRandom Forest training data shape:")
+print(X_train_rf.shape)
+
+rf_model = RandomForestClassifier(
+    n_estimators=20,
+    class_weight="balanced",
+    random_state=42,
+    n_jobs=-1
+)
+
+print("\nStarting Random Forest training...")
+
+rf_model.fit(X_train_rf, y_train_rf)
+
+print("\nRandom Forest model trained successfully!")
+
+# ==========================================
+# 12. RANDOM FOREST PREDICTIONS
+# ==========================================
+
+rf_pred = rf_model.predict(X_test_processed)
+
+print("\nRandom Forest predictions:")
+print(rf_pred[:20])
+
+
+# ==========================================
+# 13. RANDOM FOREST EVALUATION
+# ==========================================
+
+print("\nRandom Forest Classification Report:")
+print(classification_report(y_test, rf_pred))
+
+print("\nRandom Forest Confusion Matrix:")
+print(confusion_matrix(y_test, rf_pred))
